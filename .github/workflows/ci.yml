@@ -31,6 +31,9 @@ jobs:
         run: buf lint
       - name: Check compatibility with the extracted baseline
         run: buf breaking --against schema/control-5e20fa2f6943.binpb
+      - name: Fetch main for compatibility check
+        if: github.event_name == 'pull_request'
+        run: git fetch origin main:refs/heads/main
       - name: Check compatibility with main
         if: github.event_name == 'pull_request'
         run: buf breaking --against '.git#branch=main'
