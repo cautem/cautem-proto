@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.27.2
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - name: Install Buf
+        run: go install github.com/bufbuild/buf/cmd/buf@v1.66.0
+      - name: Validate schema
+        run: buf lint
+      - name: Check compatibility with the extracted baseline
+        run: buf breaking --against schema/control-5e20fa2f6943.binpb
+      - name: Check compatibility with main
+        if: github.event_name == 'pull_request'
+        run: buf breaking --against '.git#branch=main'
+      - name: Generate Go and TypeScript clients
+        run: |
+          go mod tidy
+          npm ci --prefix typescript
+          buf generate --template buf.gen.yaml
+          buf generate --template typescript/buf.gen.yaml
+          npm run build --prefix typescript
+      - name: Test generated Go packages
+        run: go test ./...
+      - name: Check generated sources
+        run: |
+          test -z "$(git status --porcelain -- gen/go typescript/src/gen go.mod go.sum)"
