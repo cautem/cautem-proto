@@ -599,6 +599,8 @@ message SandboxSummary {
   string id = 8;
   string image = 9;
   map<string, string> labels = 10;
+  // Last state observed directly from the configured compute driver.
+  string runtime_status = 11;
 }
 
 message ListServicesRequest {

@@ -4966,8 +4966,10 @@ type SandboxSummary struct {
 	Id                     string            `protobuf:"bytes,8,opt,name=id,proto3" json:"id,omitempty"`
 	Image                  string            `protobuf:"bytes,9,opt,name=image,proto3" json:"image,omitempty"`
 	Labels                 map[string]string `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	// Last state observed directly from the configured compute driver.
+	RuntimeStatus string `protobuf:"bytes,11,opt,name=runtime_status,json=runtimeStatus,proto3" json:"runtime_status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SandboxSummary) Reset() {
@@ -5068,6 +5070,13 @@ func (x *SandboxSummary) GetLabels() map[string]string {
 		return x.Labels
 	}
 	return nil
+}
+
+func (x *SandboxSummary) GetRuntimeStatus() string {
+	if x != nil {
+		return x.RuntimeStatus
+	}
+	return ""
 }
 
 type ListServicesRequest struct {
@@ -6589,7 +6598,7 @@ const file_cautem_control_v1_console_proto_rawDesc = "" +
 	"\tworkspace\x18\x05 \x01(\tR\tworkspace\x12\x18\n" +
 	"\asandbox\x18\x06 \x01(\tR\asandbox\x12\x18\n" +
 	"\aoutcome\x18\a \x01(\tR\aoutcome\x12\x12\n" +
-	"\x04code\x18\b \x01(\tR\x04code\"\xcc\x03\n" +
+	"\x04code\x18\b \x01(\tR\x04code\"\xf3\x03\n" +
 	"\x0eSandboxSummary\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1c\n" +
 	"\tworkspace\x18\x02 \x01(\tR\tworkspace\x12'\n" +
@@ -6601,7 +6610,8 @@ const file_cautem_control_v1_console_proto_rawDesc = "" +
 	"\x02id\x18\b \x01(\tR\x02id\x12\x14\n" +
 	"\x05image\x18\t \x01(\tR\x05image\x12E\n" +
 	"\x06labels\x18\n" +
-	" \x03(\v2-.cautem.control.v1.SandboxSummary.LabelsEntryR\x06labels\x1a9\n" +
+	" \x03(\v2-.cautem.control.v1.SandboxSummary.LabelsEntryR\x06labels\x12%\n" +
+	"\x0eruntime_status\x18\v \x01(\tR\rruntimeStatus\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"3\n" +
