@@ -134,6 +134,11 @@ service CatalogService {
   rpc GetWorkspace(GetWorkspaceRequest) returns (GetWorkspaceResponse);
 }
 
+// WorkspaceAdminService manages workspace-scoped resource limits.
+service WorkspaceAdminService {
+  rpc UpdateWorkspaceQuota(UpdateWorkspaceQuotaRequest) returns (UpdateWorkspaceQuotaResponse);
+}
+
 // InferenceService manages the gateway-wide inference.local route.
 service InferenceService {
   rpc GetInferenceRoute(GetInferenceRouteRequest) returns (GetInferenceRouteResponse);
@@ -655,6 +660,38 @@ message WorkspaceSummary {
   uint32 member_count = 3;
   uint64 resource_version = 4;
   int64 updated_at_unix_ms = 5;
+  WorkspaceQuota quota = 6;
+  WorkspaceUsage usage = 7;
+  bool can_manage_quota = 8;
+}
+
+// Zero quota values mean unlimited. CPU is measured in millicores and memory
+// in bytes so clients do not need floating point quantities.
+message WorkspaceQuota {
+  uint64 cpu_millicores = 1;
+  uint64 memory_bytes = 2;
+  uint32 gpu_count = 3;
+  uint32 concurrent_sandboxes = 4;
+  uint32 concurrent_gui_sessions = 5;
+}
+
+message WorkspaceUsage {
+  uint64 cpu_millicores = 1;
+  uint64 memory_bytes = 2;
+  uint32 gpu_count = 3;
+  uint32 active_sandboxes = 4;
+  uint32 active_gui_sessions = 5;
+  uint32 allocation_unknown_sandboxes = 6;
+}
+
+message UpdateWorkspaceQuotaRequest {
+  string name = 1;
+  WorkspaceQuota quota = 2;
+  uint64 expected_resource_version = 3;
+}
+
+message UpdateWorkspaceQuotaResponse {
+  WorkspaceSummary workspace = 1;
 }
 
 message ListPolicyProposalsRequest {

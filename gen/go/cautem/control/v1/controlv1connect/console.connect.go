@@ -33,6 +33,8 @@ const (
 	OperationsServiceName = "cautem.control.v1.OperationsService"
 	// CatalogServiceName is the fully-qualified name of the CatalogService service.
 	CatalogServiceName = "cautem.control.v1.CatalogService"
+	// WorkspaceAdminServiceName is the fully-qualified name of the WorkspaceAdminService service.
+	WorkspaceAdminServiceName = "cautem.control.v1.WorkspaceAdminService"
 	// InferenceServiceName is the fully-qualified name of the InferenceService service.
 	InferenceServiceName = "cautem.control.v1.InferenceService"
 	// PolicyServiceName is the fully-qualified name of the PolicyService service.
@@ -127,6 +129,9 @@ const (
 	// CatalogServiceGetWorkspaceProcedure is the fully-qualified name of the CatalogService's
 	// GetWorkspace RPC.
 	CatalogServiceGetWorkspaceProcedure = "/cautem.control.v1.CatalogService/GetWorkspace"
+	// WorkspaceAdminServiceUpdateWorkspaceQuotaProcedure is the fully-qualified name of the
+	// WorkspaceAdminService's UpdateWorkspaceQuota RPC.
+	WorkspaceAdminServiceUpdateWorkspaceQuotaProcedure = "/cautem.control.v1.WorkspaceAdminService/UpdateWorkspaceQuota"
 	// InferenceServiceGetInferenceRouteProcedure is the fully-qualified name of the InferenceService's
 	// GetInferenceRoute RPC.
 	InferenceServiceGetInferenceRouteProcedure = "/cautem.control.v1.InferenceService/GetInferenceRoute"
@@ -1122,6 +1127,77 @@ func (UnimplementedCatalogServiceHandler) ListWorkspaces(context.Context, *conne
 
 func (UnimplementedCatalogServiceHandler) GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.GetWorkspaceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cautem.control.v1.CatalogService.GetWorkspace is not implemented"))
+}
+
+// WorkspaceAdminServiceClient is a client for the cautem.control.v1.WorkspaceAdminService service.
+type WorkspaceAdminServiceClient interface {
+	UpdateWorkspaceQuota(context.Context, *connect.Request[v1.UpdateWorkspaceQuotaRequest]) (*connect.Response[v1.UpdateWorkspaceQuotaResponse], error)
+}
+
+// NewWorkspaceAdminServiceClient constructs a client for the
+// cautem.control.v1.WorkspaceAdminService service. By default, it uses the Connect protocol with
+// the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To use
+// the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewWorkspaceAdminServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) WorkspaceAdminServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	workspaceAdminServiceMethods := v1.File_cautem_control_v1_console_proto.Services().ByName("WorkspaceAdminService").Methods()
+	return &workspaceAdminServiceClient{
+		updateWorkspaceQuota: connect.NewClient[v1.UpdateWorkspaceQuotaRequest, v1.UpdateWorkspaceQuotaResponse](
+			httpClient,
+			baseURL+WorkspaceAdminServiceUpdateWorkspaceQuotaProcedure,
+			connect.WithSchema(workspaceAdminServiceMethods.ByName("UpdateWorkspaceQuota")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// workspaceAdminServiceClient implements WorkspaceAdminServiceClient.
+type workspaceAdminServiceClient struct {
+	updateWorkspaceQuota *connect.Client[v1.UpdateWorkspaceQuotaRequest, v1.UpdateWorkspaceQuotaResponse]
+}
+
+// UpdateWorkspaceQuota calls cautem.control.v1.WorkspaceAdminService.UpdateWorkspaceQuota.
+func (c *workspaceAdminServiceClient) UpdateWorkspaceQuota(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceQuotaRequest]) (*connect.Response[v1.UpdateWorkspaceQuotaResponse], error) {
+	return c.updateWorkspaceQuota.CallUnary(ctx, req)
+}
+
+// WorkspaceAdminServiceHandler is an implementation of the cautem.control.v1.WorkspaceAdminService
+// service.
+type WorkspaceAdminServiceHandler interface {
+	UpdateWorkspaceQuota(context.Context, *connect.Request[v1.UpdateWorkspaceQuotaRequest]) (*connect.Response[v1.UpdateWorkspaceQuotaResponse], error)
+}
+
+// NewWorkspaceAdminServiceHandler builds an HTTP handler from the service implementation. It
+// returns the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewWorkspaceAdminServiceHandler(svc WorkspaceAdminServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	workspaceAdminServiceMethods := v1.File_cautem_control_v1_console_proto.Services().ByName("WorkspaceAdminService").Methods()
+	workspaceAdminServiceUpdateWorkspaceQuotaHandler := connect.NewUnaryHandler(
+		WorkspaceAdminServiceUpdateWorkspaceQuotaProcedure,
+		svc.UpdateWorkspaceQuota,
+		connect.WithSchema(workspaceAdminServiceMethods.ByName("UpdateWorkspaceQuota")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/cautem.control.v1.WorkspaceAdminService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case WorkspaceAdminServiceUpdateWorkspaceQuotaProcedure:
+			workspaceAdminServiceUpdateWorkspaceQuotaHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedWorkspaceAdminServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedWorkspaceAdminServiceHandler struct{}
+
+func (UnimplementedWorkspaceAdminServiceHandler) UpdateWorkspaceQuota(context.Context, *connect.Request[v1.UpdateWorkspaceQuotaRequest]) (*connect.Response[v1.UpdateWorkspaceQuotaResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cautem.control.v1.WorkspaceAdminService.UpdateWorkspaceQuota is not implemented"))
 }
 
 // InferenceServiceClient is a client for the cautem.control.v1.InferenceService service.

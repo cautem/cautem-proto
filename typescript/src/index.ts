@@ -2,7 +2,7 @@ export * from "./gen/cautem/control/v1/console_pb.js";
 
 import { createClient, type Interceptor, type Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { CatalogService, ConsoleService, OperationsService, PolicyService, ProviderCredentialService, ProviderProfileService, SandboxService } from "./gen/cautem/control/v1/console_pb.js";
+import { CatalogService, ConsoleService, OperationsService, PolicyService, ProviderCredentialService, ProviderProfileService, SandboxService, WorkspaceAdminService } from "./gen/cautem/control/v1/console_pb.js";
 
 export interface ControlClientOptions {
   baseUrl: string;
@@ -25,6 +25,7 @@ export function createControlClients(transport: Transport) {
     sandboxes: createClient(SandboxService, transport),
     operations: createClient(OperationsService, transport),
     catalog: createClient(CatalogService, transport),
+    workspaceAdmin: createClient(WorkspaceAdminService, transport),
     policy: createClient(PolicyService, transport),
     providerCredentials: createClient(ProviderCredentialService, transport),
     providerProfiles: createClient(ProviderProfileService, transport),
