@@ -7489,7 +7489,7 @@ const file_cautem_control_v1_console_proto_rawDesc = "" +
 	"\x15UpdateProviderProfile\x12/.cautem.control.v1.UpdateProviderProfileRequest\x1a0.cautem.control.v1.UpdateProviderProfileResponse\x12z\n" +
 	"\x15DeleteProviderProfile\x12/.cautem.control.v1.DeleteProviderProfileRequest\x1a0.cautem.control.v1.DeleteProviderProfileResponse2\xa4\x01\n" +
 	"\x19ProviderCredentialService\x12\x86\x01\n" +
-	"\x19UpdateProviderCredentials\x123.cautem.control.v1.UpdateProviderCredentialsRequest\x1a4.cautem.control.v1.UpdateProviderCredentialsResponseBCZAgithub.com/cautem/cautem-proto/gen/go/cautem/control/v1;controlv1b\x06proto3"
+	"\x19UpdateProviderCredentials\x123.cautem.control.v1.UpdateProviderCredentialsRequest\x1a4.cautem.control.v1.UpdateProviderCredentialsResponseBFZDgithub.com/cautem/quarshell-proto/gen/go/cautem/control/v1;controlv1b\x06proto3"
 
 var (
 	file_cautem_control_v1_console_proto_rawDescOnce sync.Once
