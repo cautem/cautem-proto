@@ -64,6 +64,8 @@ service SandboxService {
   rpc StartSandbox(StartSandboxRequest) returns (StartSandboxResponse);
   rpc StopSandbox(StopSandboxRequest) returns (StopSandboxResponse);
   rpc DeleteSandbox(DeleteSandboxRequest) returns (DeleteSandboxResponse);
+  // Attach to the already-running canonical process; closing the stream only detaches.
+  rpc AttachMainProcess(stream AttachMainProcessRequest) returns (stream AttachMainProcessResponse);
 }
 
 // ManagedSandboxService records sandboxes whose runtime is controlled by the CLI.
@@ -481,6 +483,50 @@ message CreateSandboxRequest {
   // Required client-generated ID, reused verbatim for retries.
   string request_id = 6;
   map<string, string> labels = 7;
+  // Portable workload overrides for an image based create. CPU is millicores;
+  // memory is bytes. Zero leaves the corresponding limit unset.
+  uint32 cpu_millis = 8;
+  uint64 memory_bytes = 9;
+  // Zero leaves GPU assignment unset; positive values request that many GPUs.
+  uint32 gpu_count = 10;
+  map<string, string> environment = 11;
+  // JSON object keyed by compute driver name, for example {"docker": {...}}.
+  string driver_config_json = 12;
+  // Allocate a PTY for the canonical command and allow later TTY attach.
+  bool tty = 13;
+  // Process limit for the compute runtime. Zero keeps the backend default;
+  // -1 disables the limit.
+  int64 pids_limit = 14;
+  // Explicit CDI devices requested for this runtime (for example nvidia.com/gpu=0).
+  repeated string cdi_devices = 15;
+}
+
+message AttachMainProcessStart {
+  string workspace = 1;
+  string name = 2;
+  bool tty = 3;
+  uint32 cols = 4;
+  uint32 rows = 5;
+}
+
+message AttachMainProcessResize {
+  uint32 cols = 1;
+  uint32 rows = 2;
+}
+
+message AttachMainProcessRequest {
+  oneof payload {
+    AttachMainProcessStart start = 1;
+    bytes stdin = 2;
+    AttachMainProcessResize resize = 3;
+  }
+}
+
+message AttachMainProcessResponse {
+  oneof payload {
+    bytes output = 1;
+    int32 exit_code = 2;
+  }
 }
 
 message CreateSandboxResponse {

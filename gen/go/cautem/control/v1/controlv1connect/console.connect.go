@@ -96,6 +96,9 @@ const (
 	// SandboxServiceDeleteSandboxProcedure is the fully-qualified name of the SandboxService's
 	// DeleteSandbox RPC.
 	SandboxServiceDeleteSandboxProcedure = "/cautem.control.v1.SandboxService/DeleteSandbox"
+	// SandboxServiceAttachMainProcessProcedure is the fully-qualified name of the SandboxService's
+	// AttachMainProcess RPC.
+	SandboxServiceAttachMainProcessProcedure = "/cautem.control.v1.SandboxService/AttachMainProcess"
 	// ManagedSandboxServiceSyncManagedSandboxProcedure is the fully-qualified name of the
 	// ManagedSandboxService's SyncManagedSandbox RPC.
 	ManagedSandboxServiceSyncManagedSandboxProcedure = "/cautem.control.v1.ManagedSandboxService/SyncManagedSandbox"
@@ -410,6 +413,8 @@ type SandboxServiceClient interface {
 	StartSandbox(context.Context, *connect.Request[v1.StartSandboxRequest]) (*connect.Response[v1.StartSandboxResponse], error)
 	StopSandbox(context.Context, *connect.Request[v1.StopSandboxRequest]) (*connect.Response[v1.StopSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1.DeleteSandboxRequest]) (*connect.Response[v1.DeleteSandboxResponse], error)
+	// Attach to the already-running canonical process; closing the stream only detaches.
+	AttachMainProcess(context.Context) *connect.BidiStreamForClient[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse]
 }
 
 // NewSandboxServiceClient constructs a client for the cautem.control.v1.SandboxService service. By
@@ -483,6 +488,12 @@ func NewSandboxServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(sandboxServiceMethods.ByName("DeleteSandbox")),
 			connect.WithClientOptions(opts...),
 		),
+		attachMainProcess: connect.NewClient[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse](
+			httpClient,
+			baseURL+SandboxServiceAttachMainProcessProcedure,
+			connect.WithSchema(sandboxServiceMethods.ByName("AttachMainProcess")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -498,6 +509,7 @@ type sandboxServiceClient struct {
 	startSandbox      *connect.Client[v1.StartSandboxRequest, v1.StartSandboxResponse]
 	stopSandbox       *connect.Client[v1.StopSandboxRequest, v1.StopSandboxResponse]
 	deleteSandbox     *connect.Client[v1.DeleteSandboxRequest, v1.DeleteSandboxResponse]
+	attachMainProcess *connect.Client[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse]
 }
 
 // ListSandboxes calls cautem.control.v1.SandboxService.ListSandboxes.
@@ -550,6 +562,11 @@ func (c *sandboxServiceClient) DeleteSandbox(ctx context.Context, req *connect.R
 	return c.deleteSandbox.CallUnary(ctx, req)
 }
 
+// AttachMainProcess calls cautem.control.v1.SandboxService.AttachMainProcess.
+func (c *sandboxServiceClient) AttachMainProcess(ctx context.Context) *connect.BidiStreamForClient[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse] {
+	return c.attachMainProcess.CallBidiStream(ctx)
+}
+
 // SandboxServiceHandler is an implementation of the cautem.control.v1.SandboxService service.
 type SandboxServiceHandler interface {
 	// ListSandboxes returns a bounded page of one workspace's sandbox records.
@@ -570,6 +587,8 @@ type SandboxServiceHandler interface {
 	StartSandbox(context.Context, *connect.Request[v1.StartSandboxRequest]) (*connect.Response[v1.StartSandboxResponse], error)
 	StopSandbox(context.Context, *connect.Request[v1.StopSandboxRequest]) (*connect.Response[v1.StopSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1.DeleteSandboxRequest]) (*connect.Response[v1.DeleteSandboxResponse], error)
+	// Attach to the already-running canonical process; closing the stream only detaches.
+	AttachMainProcess(context.Context, *connect.BidiStream[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse]) error
 }
 
 // NewSandboxServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -639,6 +658,12 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect.Handler
 		connect.WithSchema(sandboxServiceMethods.ByName("DeleteSandbox")),
 		connect.WithHandlerOptions(opts...),
 	)
+	sandboxServiceAttachMainProcessHandler := connect.NewBidiStreamHandler(
+		SandboxServiceAttachMainProcessProcedure,
+		svc.AttachMainProcess,
+		connect.WithSchema(sandboxServiceMethods.ByName("AttachMainProcess")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/cautem.control.v1.SandboxService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SandboxServiceListSandboxesProcedure:
@@ -661,6 +686,8 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect.Handler
 			sandboxServiceStopSandboxHandler.ServeHTTP(w, r)
 		case SandboxServiceDeleteSandboxProcedure:
 			sandboxServiceDeleteSandboxHandler.ServeHTTP(w, r)
+		case SandboxServiceAttachMainProcessProcedure:
+			sandboxServiceAttachMainProcessHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -708,6 +735,10 @@ func (UnimplementedSandboxServiceHandler) StopSandbox(context.Context, *connect.
 
 func (UnimplementedSandboxServiceHandler) DeleteSandbox(context.Context, *connect.Request[v1.DeleteSandboxRequest]) (*connect.Response[v1.DeleteSandboxResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cautem.control.v1.SandboxService.DeleteSandbox is not implemented"))
+}
+
+func (UnimplementedSandboxServiceHandler) AttachMainProcess(context.Context, *connect.BidiStream[v1.AttachMainProcessRequest, v1.AttachMainProcessResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("cautem.control.v1.SandboxService.AttachMainProcess is not implemented"))
 }
 
 // ManagedSandboxServiceClient is a client for the cautem.control.v1.ManagedSandboxService service.
