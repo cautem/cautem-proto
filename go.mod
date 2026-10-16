@@ -1,4 +1,4 @@
-module github.com/cautem/cautem-proto
+module github.com/cautem/quarshell-proto
 
 go 1.27.0
 

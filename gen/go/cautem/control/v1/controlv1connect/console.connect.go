@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1 "github.com/cautem/cautem-proto/gen/go/cautem/control/v1"
+	v1 "github.com/cautem/quarshell-proto/gen/go/cautem/control/v1"
 	http "net/http"
 	strings "strings"
 )

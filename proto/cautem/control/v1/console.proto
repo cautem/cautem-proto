@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package cautem.control.v1;
 
-option go_package = "github.com/cautem/cautem-proto/gen/go/cautem/control/v1;controlv1";
+option go_package = "github.com/cautem/quarshell-proto/gen/go/cautem/control/v1;controlv1";
 
 // ConsoleService provides safe, user-facing gateway summary methods.
 service ConsoleService {
